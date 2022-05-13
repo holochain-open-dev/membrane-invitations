@@ -1,0 +1,8 @@
+---
+manifest_version: "1"
+name: clone_invitations
+uuid: 00000000-0000-0000-0000-000000000000
+properties: ~
+zomes:
+  - name: clone_invitations
+    bundled: ../../target/wasm32-unknown-unknown/release/hc_zome_clone_invitations.wasm
