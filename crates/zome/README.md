@@ -1,4 +1,4 @@
-# hc_zome_clone_invitations
+# hc_zome_membrane_invitations
 
 MembraneInvitations zome for any Holochain app.
 

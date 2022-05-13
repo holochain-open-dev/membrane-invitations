@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ::fixt;
-use hc_zome_clone_invitations_types::*;
+use hc_zome_membrane_invitations_types::*;
 use hdk::prelude::holo_hash::fixt::DnaHashB64Fixturator;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
@@ -13,21 +13,21 @@ async fn main_flow() {
     // Use prebuilt DNA file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/clone_invitations.dna");
+        .join("../../../workdir/membrane_invitations.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
     let apps = conductors
-        .setup_app("clone_invitations", &[dna])
+        .setup_app("membrane_invitations", &[dna])
         .await
         .unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (bobbo,)) = apps.into_tuples();
 
-    let alice_zome = alice.zome("clone_invitations");
-    let bob_zome = bobbo.zome("clone_invitations");
+    let alice_zome = alice.zome("membrane_invitations");
+    let bob_zome = bobbo.zome("membrane_invitations");
 
     let mut f = DnaHashB64Fixturator::new(fixt::Predictable);
     let original_dna_hash = f.next().unwrap();
@@ -73,7 +73,7 @@ async fn main_flow() {
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let bobs_invitations: BTreeMap<HeaderHashB64, CloneDnaInvitation> = conductors[1]
+    let bobs_invitations: BTreeMap<HeaderHashB64, MembraneInvitation> = conductors[1]
         .call(&bob_zome, "get_my_invitations", ())
         .await;
 

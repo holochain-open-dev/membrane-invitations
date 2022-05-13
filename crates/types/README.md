@@ -1,6 +1,6 @@
-# hc_zome_clone_invitations_types
+# hc_zome_membrane_invitations_types
 
-Types for the hc_zome_clone_invitations zome.
+Types for the hc_zome_membrane_invitations zome.
 
 ## Documentation
 

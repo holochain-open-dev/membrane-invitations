@@ -1,23 +1,23 @@
 [package]
 authors = ["guillem.cordoba@gmail.com", "eric@harris-braun.com", "tatsuya.g.sato@yumeville.com"]
 description = "MembraneInvitations zome for any Holochain app"
-documentation = "https://holochain-open-dev.github.io/clone_invitations"
+documentation = "https://holochain-open-dev.github.io/membrane_invitations"
 edition = "2018"
-homepage = "https://docs.rs/hc_zome_clone_invitations"
+homepage = "https://docs.rs/hc_zome_membrane_invitations"
 license = "MIT"
-name = "hc_zome_clone_invitations"
-repository = "https://github.com/holochain-open-dev/clone_invitations"
+name = "hc_zome_membrane_invitations"
+repository = "https://github.com/holochain-open-dev/membrane_invitations"
 version = "0.0.1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "hc_zome_clone_invitations"
+name = "hc_zome_membrane_invitations"
 
 [dependencies]
 derive_more = "0"
 serde = "1"
 
-hc_zome_clone_invitations_types = {path = "../types"}
+hc_zome_membrane_invitations_types = {path = "../types"}
 hdk = {version = "0.0.130", features = ["encoding"]}
 
 [dev-dependencies]

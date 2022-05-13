@@ -1,4 +1,4 @@
-# Backend Docs >> hc_zome_clone_invitations ||10
+# Backend Docs >> hc_zome_membrane_invitations ||10
 
 Use this crate directly if you want include and maybe extend this zome in your DNA.
 
@@ -6,4 +6,4 @@ Notice that just by importing this crate, all its zome functions will be automat
 
 Read the documentation for the zome functions available from this zome:
 
-- https://docs.rs/hc_zome_clone_invitations
+- https://docs.rs/hc_zome_membrane_invitations

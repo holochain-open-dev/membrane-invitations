@@ -3,12 +3,12 @@ manifest_version: "1"
 name: membrane-invitations-test
 description: ~
 roles:
-  - id: clone_invitations
+  - id: membrane_invitations
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "../dna/clone_invitations.dna"
+      bundled: "../dna/membrane_invitations.dna"
       properties: ~
       uuid: ~
       version: ~

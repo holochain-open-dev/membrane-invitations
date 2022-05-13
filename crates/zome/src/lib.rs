@@ -1,4 +1,4 @@
-//! ## hc_zome_clone_invitations
+//! ## hc_zome_membrane_invitations
 
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -6,7 +6,7 @@ use std::sync::Arc;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
-use hc_zome_clone_invitations_types::*;
+use hc_zome_membrane_invitations_types::*;
 
 entry_defs![CloneDnaRecipe::entry_def()];
 
@@ -60,14 +60,14 @@ pub fn invite_to_join(input: InviteToCloneDnaInput) -> ExternResult<HeaderHashB6
 }
 
 #[hdk_extern]
-pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, CloneDnaInvitation>> {
+pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, MembraneInvitation>> {
     let agent_info = agent_info()?;
 
     let links = get_links(agent_info.agent_initial_pubkey.clone().into(), None)?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
-    let mut my_invitations: BTreeMap<HeaderHashB64, CloneDnaInvitation> = BTreeMap::new();
+    let mut my_invitations: BTreeMap<HeaderHashB64, MembraneInvitation> = BTreeMap::new();
 
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHashB64::from(EntryHash::from(link.target))) {
@@ -80,7 +80,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, CloneDn
 
             // Remove this get when the link struct includes author
             if let Some(el) = get(link.create_link_hash.clone(), GetOptions::default())? {
-                let invitation = CloneDnaInvitation {
+                let invitation = MembraneInvitation {
                     clone_dna_recipe: recipe.clone(),
                     inviter: el.header().author().clone().into(),
                     invitee: agent_info.agent_initial_pubkey.clone().into(),

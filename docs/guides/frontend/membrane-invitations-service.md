@@ -1,6 +1,6 @@
 # Frontend Docs >> MembraneInvitationsService ||30
 
-The `MembraneInvitationsService` is a state-less class that provides typings wrapping the zome calls that can be made to `hc_zome_clone_invitations`.
+The `MembraneInvitationsService` is a state-less class that provides typings wrapping the zome calls that can be made to `hc_zome_membrane_invitations`.
 
 ```js
 import { MembraneInvitationsService } from '@holochain-open-dev/membrane-invitations';
