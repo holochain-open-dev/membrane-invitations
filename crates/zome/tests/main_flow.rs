@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use ::fixt;
@@ -13,7 +14,7 @@ async fn main_flow() {
     // Use prebuilt DNA file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/membrane_invitations.dna");
+        .join("../../workdir/dna/membrane_invitations.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
@@ -50,7 +51,7 @@ async fn main_flow() {
         )
         .await;
 
-    let clone_recipes: Vec<CloneDnaRecipe> = conductors[0]
+    let clone_recipes: BTreeMap<EntryHashB64, CloneDnaRecipe> = conductors[0]
         .call(
             &alice_zome,
             "get_clone_recipes_for_dna",
@@ -59,28 +60,31 @@ async fn main_flow() {
         .await;
 
     assert_eq!(clone_recipes.len(), 1);
-    assert_eq!(clone_recipes[0].original_dna_hash, original_dna_hash);
+    assert_eq!(
+        clone_recipes.get(&clone_dna_recipe_hash).unwrap().original_dna_hash,
+        original_dna_hash
+    );
 
-    let invitation = InviteToCloneDnaInput {
+    let invitation = InviteToJoinMembraneInput {
         clone_dna_recipe_hash: clone_dna_recipe_hash.clone(),
         invitee: bob_zome.cell_id().agent_pubkey().clone().into(),
         membrane_proof: Some(Arc::new(SerializedBytes::try_from(()).unwrap())),
     };
 
     let invitation_header_hash: HeaderHashB64 = conductors[0]
-        .call(&alice_zome, "invite_to_clone", invitation)
+        .call(&alice_zome, "invite_to_join_membrane", invitation)
         .await;
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let bobs_invitations: BTreeMap<HeaderHashB64, MembraneInvitation> = conductors[1]
+    let bobs_invitations: BTreeMap<HeaderHashB64, JoinMembraneInvitation> = conductors[1]
         .call(&bob_zome, "get_my_invitations", ())
         .await;
 
     assert_eq!(bobs_invitations.len(), 1);
     assert_eq!(
         bobs_invitations
-            .get(invitation_header_hash)
+            .get(&invitation_header_hash)
             .unwrap()
             .clone_dna_recipe
             .original_dna_hash,

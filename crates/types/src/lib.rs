@@ -15,17 +15,17 @@ pub struct CloneDnaRecipe {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MembraneInvitation {
-    pub clone_dna_recipe: CloneDnaRecipe,
-    pub inviter: AgentPubKeyB64,
+pub struct InviteToJoinMembraneInput {
+    pub clone_dna_recipe_hash: EntryHashB64,
     pub invitee: AgentPubKeyB64,
     pub membrane_proof: Option<MembraneProof>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct InviteToMembraneInput {
-    pub clone_dna_recipe_hash: EntryHashB64,
+pub struct JoinMembraneInvitation {
+    pub clone_dna_recipe: CloneDnaRecipe,
+    pub inviter: AgentPubKeyB64,
     pub invitee: AgentPubKeyB64,
     pub membrane_proof: Option<MembraneProof>,
 }

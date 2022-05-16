@@ -43,7 +43,7 @@ pub fn get_clone_recipes_for_dna(
 }
 
 #[hdk_extern]
-pub fn invite_to_join(input: InviteToCloneDnaInput) -> ExternResult<HeaderHashB64> {
+pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<HeaderHashB64> {
     let tag: LinkTag = match input.membrane_proof {
         None => LinkTag::new(vec![]),
         Some(mp) => LinkTag::new(mp.bytes().clone()),
@@ -60,14 +60,14 @@ pub fn invite_to_join(input: InviteToCloneDnaInput) -> ExternResult<HeaderHashB6
 }
 
 #[hdk_extern]
-pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, MembraneInvitation>> {
+pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMembraneInvitation>> {
     let agent_info = agent_info()?;
 
     let links = get_links(agent_info.agent_initial_pubkey.clone().into(), None)?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
-    let mut my_invitations: BTreeMap<HeaderHashB64, MembraneInvitation> = BTreeMap::new();
+    let mut my_invitations: BTreeMap<HeaderHashB64, JoinMembraneInvitation> = BTreeMap::new();
 
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHashB64::from(EntryHash::from(link.target))) {
@@ -80,7 +80,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, Membran
 
             // Remove this get when the link struct includes author
             if let Some(el) = get(link.create_link_hash.clone(), GetOptions::default())? {
-                let invitation = MembraneInvitation {
+                let invitation = JoinMembraneInvitation {
                     clone_dna_recipe: recipe.clone(),
                     inviter: el.header().author().clone().into(),
                     invitee: agent_info.agent_initial_pubkey.clone().into(),
