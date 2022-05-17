@@ -16,7 +16,7 @@ pub struct CloneDnaRecipe {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InviteToJoinMembraneInput {
-    pub clone_dna_recipe_hash: EntryHashB64,
+    pub clone_dna_recipe: CloneDnaRecipe,
     pub invitee: AgentPubKeyB64,
     pub membrane_proof: Option<MembraneProof>,
 }

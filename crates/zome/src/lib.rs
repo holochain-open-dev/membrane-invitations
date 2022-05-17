@@ -11,6 +11,26 @@ use hc_zome_membrane_invitations_types::*;
 entry_defs![CloneDnaRecipe::entry_def()];
 
 #[hdk_extern]
+fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    // grant unrestricted access to accept_cap_claim so other agents can send us claims
+    let mut functions = BTreeSet::new();
+    functions.insert((zome_info()?.name, "recv_remote_signal".into()));
+    create_cap_grant(CapGrantEntry {
+        tag: "".into(),
+        // empty access converts to unrestricted
+        access: ().into(),
+        functions,
+    })?;
+    Ok(InitCallbackResult::Pass)
+}
+
+#[hdk_extern]
+fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
+    let sig: Signal = signal.decode()?;
+    Ok(emit_signal(&sig)?)
+}
+
+#[hdk_extern]
 pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult<EntryHashB64> {
     let hash = hash_entry(&clone_dna_recipe)?;
 
@@ -42,19 +62,46 @@ pub fn get_clone_recipes_for_dna(
     get_clone_dna_recipes(&links)
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
+pub enum Signal {
+    NewInvitation {
+        invitation_header_hash: HeaderHashB64,
+        invitation: JoinMembraneInvitation,
+    },
+}
+
 #[hdk_extern]
 pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<HeaderHashB64> {
-    let tag: LinkTag = match input.membrane_proof {
+    let tag: LinkTag = match input.membrane_proof.clone() {
         None => LinkTag::new(vec![]),
         Some(mp) => LinkTag::new(mp.bytes().clone()),
     };
 
+    let clone_dna_recipe_hash = hash_entry(&input.clone_dna_recipe)?;
+
+    let invitee_pub_key = AgentPubKey::from(input.invitee);
     let header_hash = create_link(
-        AgentPubKey::from(input.invitee).into(),
-        EntryHash::from(input.clone_dna_recipe_hash).into(),
+        invitee_pub_key.clone().into(),
+        EntryHash::from(clone_dna_recipe_hash).into(),
         HdkLinkType::Any,
         tag,
     )?;
+
+    let invitation = JoinMembraneInvitation {
+        invitee: invitee_pub_key.clone().into(),
+        clone_dna_recipe: input.clone_dna_recipe,
+        inviter: agent_info()?.agent_initial_pubkey.into(),
+        membrane_proof: input.membrane_proof,
+    };
+
+    let signal = Signal::NewInvitation {
+        invitation,
+        invitation_header_hash: header_hash.clone().into(),
+    };
+
+    remote_signal(ExternIO::encode(signal), vec![invitee_pub_key])?;
 
     Ok(header_hash.into())
 }
