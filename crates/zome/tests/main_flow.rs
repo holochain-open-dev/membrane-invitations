@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::sync::Arc;
 
 use ::fixt;
 use hc_zome_membrane_invitations_types::*;
@@ -68,7 +67,7 @@ async fn main_flow() {
     let invitation = InviteToJoinMembraneInput {
         clone_dna_recipe: create_clone_dna_recipe_input.clone(),
         invitee: bob_zome.cell_id().agent_pubkey().clone().into(),
-        membrane_proof: Some(Arc::new(SerializedBytes::try_from(()).unwrap())),
+        membrane_proof: Some(SerializedBytes::try_from(()).unwrap()),
     };
 
     let invitation_header_hash: HeaderHashB64 = conductors[0]

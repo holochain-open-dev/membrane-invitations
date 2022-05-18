@@ -1,7 +1,6 @@
 //! ## hc_zome_membrane_invitations
 
 use std::collections::BTreeMap;
-use std::sync::Arc;
 
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
@@ -37,9 +36,7 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
     create_entry(&clone_dna_recipe)?;
 
     create_link(
-        DnaHash::from(clone_dna_recipe.original_dna_hash)
-            .retype(hash_type::External)
-            .into(),
+        DnaHash::from(clone_dna_recipe.original_dna_hash).retype(hash_type::Entry),
         hash.clone().into(),
         HdkLinkType::Any,
         (),
@@ -53,9 +50,7 @@ pub fn get_clone_recipes_for_dna(
     original_dna_hash: DnaHashB64,
 ) -> ExternResult<BTreeMap<EntryHashB64, CloneDnaRecipe>> {
     let links = get_links(
-        DnaHash::from(original_dna_hash)
-            .retype(hash_type::External)
-            .into(),
+        DnaHash::from(original_dna_hash).retype(hash_type::Entry),
         None,
     )?;
 
@@ -119,9 +114,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMem
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHashB64::from(EntryHash::from(link.target))) {
             let membrane_proof = match link.tag.0.len() > 0 {
-                true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(
-                    link.tag.0,
-                )))),
+                true => Some(SerializedBytes::from(UnsafeBytes::from(link.tag.0))),
                 false => None,
             };
 
