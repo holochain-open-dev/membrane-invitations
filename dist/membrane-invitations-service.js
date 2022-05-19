@@ -9,9 +9,9 @@ export class MembraneInvitationsService {
     getCloneRecipesForDna(originalDnaHash) {
         return this.callZome("get_clone_recipes_for_dna", originalDnaHash);
     }
-    inviteToJoinMembrane(cloneDnaRecipeHash, invitee, membraneProof) {
+    inviteToJoinMembrane(cloneDnaRecipe, invitee, membraneProof) {
         return this.callZome("invite_to_join_membrane", {
-            cloneDnaRecipeHash,
+            cloneDnaRecipe,
             invitee,
             membraneProof,
         });

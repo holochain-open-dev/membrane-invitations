@@ -8,7 +8,7 @@ export declare class MembraneInvitationsService {
     constructor(cellClient: CellClient, zomeName?: string);
     createCloneDnaRecipe(recipe: CloneDnaRecipe): Promise<EntryHashB64>;
     getCloneRecipesForDna(originalDnaHash: DnaHashB64): Promise<Record<EntryHashB64, CloneDnaRecipe>>;
-    inviteToJoinMembrane(cloneDnaRecipeHash: EntryHashB64, invitee: AgentPubKeyB64, membraneProof: MembraneProof | undefined): Promise<Record<EntryHashB64, CloneDnaRecipe>>;
+    inviteToJoinMembrane(cloneDnaRecipe: CloneDnaRecipe, invitee: AgentPubKeyB64, membraneProof: MembraneProof | undefined): Promise<Record<EntryHashB64, CloneDnaRecipe>>;
     getMyInvitations(): Promise<Record<HeaderHashB64, JoinMembraneInvitation>>;
     removeInvitation(invitationLinkHash: HeaderHashB64): Promise<void>;
     private callZome;

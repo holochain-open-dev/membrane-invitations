@@ -25,12 +25,12 @@ export class MembraneInvitationsService {
   }
 
   public inviteToJoinMembrane(
-    cloneDnaRecipeHash: EntryHashB64,
+    cloneDnaRecipe: CloneDnaRecipe,
     invitee: AgentPubKeyB64,
     membraneProof: MembraneProof | undefined
   ): Promise<Record<EntryHashB64, CloneDnaRecipe>> {
     return this.callZome("invite_to_join_membrane", {
-      cloneDnaRecipeHash,
+      cloneDnaRecipe,
       invitee,
       membraneProof,
     });
