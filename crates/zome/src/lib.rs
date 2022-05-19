@@ -96,7 +96,7 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
         invitation_header_hash: header_hash.clone().into(),
     };
 
-    remote_signal(ExternIO::encode(signal), vec![invitee_pub_key])?;
+    remote_signal(ExternIO::encode(signal)?, vec![invitee_pub_key])?;
 
     Ok(header_hash.into())
 }
