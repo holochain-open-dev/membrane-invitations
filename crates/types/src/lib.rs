@@ -28,4 +28,5 @@ pub struct JoinMembraneInvitation {
     pub inviter: AgentPubKeyB64,
     pub invitee: AgentPubKeyB64,
     pub membrane_proof: Option<MembraneProof>,
+    pub timestamp: Timestamp,
 }
