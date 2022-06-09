@@ -77,6 +77,7 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
     let clone_dna_recipe_hash = hash_entry(&input.clone_dna_recipe)?;
 
     let invitee_pub_key = AgentPubKey::from(input.invitee);
+
     let header_hash = create_link(
         invitee_pub_key.clone().into(),
         EntryHash::from(clone_dna_recipe_hash).into(),
@@ -89,6 +90,7 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
         clone_dna_recipe: input.clone_dna_recipe,
         inviter: agent_info()?.agent_initial_pubkey.into(),
         membrane_proof: input.membrane_proof,
+        timestamp: sys_time()?,
     };
 
     let signal = Signal::NewInvitation {
@@ -125,6 +127,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMem
                     inviter: el.header().author().clone().into(),
                     invitee: agent_info.agent_initial_pubkey.clone().into(),
                     membrane_proof,
+                    timestamp: link.timestamp,
                 };
 
                 my_invitations.insert(link.create_link_hash.into(), invitation);
