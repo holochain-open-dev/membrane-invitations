@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use hc_zome_membrane_invitations_types::*;
-use hdk::prelude::holo_hash::fixt::DnaHashB64Fixturator;
 use ::fixt::fixt;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
