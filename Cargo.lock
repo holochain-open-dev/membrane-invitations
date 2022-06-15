@@ -1178,23 +1178,6 @@ dependencies = [
 
 [[package]]
 name = "fixt"
-version = "0.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ece95a4d857c96cd21e2492c9f05faf32847f9b567fbedfbaf02c3ebc5693950"
-dependencies = [
- "holochain_serialized_bytes",
- "lazy_static",
- "parking_lot 0.10.2",
- "paste",
- "rand 0.7.3",
- "rand_core 0.5.1",
- "serde",
- "strum",
- "strum_macros",
-]
-
-[[package]]
-name = "fixt"
 version = "0.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01c2595b1aa6285f78dfbbb63e3f9d42ce3e886fb53af23468eb188bfe1017ad"
@@ -1576,7 +1559,7 @@ name = "hc_zome_membrane_invitations"
 version = "0.0.1"
 dependencies = [
  "derive_more",
- "fixt 0.0.10",
+ "fixt",
  "futures",
  "hc_zome_membrane_invitations_types",
  "hdk",
@@ -1660,7 +1643,7 @@ dependencies = [
  "base64",
  "blake2b_simd 0.5.11",
  "derive_more",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "holochain_serialized_bytes",
  "kitsune_p2p_dht_arc",
@@ -1689,7 +1672,7 @@ dependencies = [
  "directories 2.0.2",
  "either",
  "fallible-iterator",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "ghost_actor 0.3.0-alpha.4",
  "hdk",
@@ -1764,7 +1747,7 @@ dependencies = [
  "derive_more",
  "either",
  "fallible-iterator",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "ghost_actor 0.3.0-alpha.4",
  "hdk",
@@ -1873,7 +1856,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "258c68c438804d8c6b9aae5bc230b8c15057eaf6b4641f9aa33e794b9dbdd360"
 dependencies = [
  "async-trait",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "ghost_actor 0.3.0-alpha.4",
  "holo_hash",
@@ -1937,7 +1920,7 @@ dependencies = [
  "either",
  "failure",
  "fallible-iterator",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "holo_hash",
  "holochain_serialized_bytes",
@@ -2037,7 +2020,7 @@ dependencies = [
  "derive_builder",
  "derive_more",
  "either",
- "fixt 0.0.11",
+ "fixt",
  "flate2",
  "futures",
  "holo_hash",
@@ -2184,7 +2167,7 @@ dependencies = [
  "arbitrary",
  "contrafact",
  "derive_builder",
- "fixt 0.0.11",
+ "fixt",
  "holo_hash",
  "holochain_integrity_types",
  "holochain_serialized_bytes",
@@ -2486,7 +2469,7 @@ dependencies = [
  "blake2b_simd 0.5.11",
  "bloomfilter",
  "derive_more",
- "fixt 0.0.11",
+ "fixt",
  "futures",
  "ghost_actor 0.3.0-alpha.4",
  "governor",

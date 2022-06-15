@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use ::fixt;
 use hc_zome_membrane_invitations_types::*;
 use hdk::prelude::holo_hash::fixt::DnaHashB64Fixturator;
+use ::fixt::fixt;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
@@ -30,9 +30,8 @@ async fn main_flow() {
     let alice_zome = alice.zome("membrane_invitations");
     let bob_zome = bobbo.zome("membrane_invitations");
 
-    let mut f = DnaHashB64Fixturator::new(fixt::Predictable);
-    let original_dna_hash = f.next().unwrap();
-    let resulting_dna_hash = f.next().unwrap();
+    let original_dna_hash = fixt!(DnaHashB64);
+    let resulting_dna_hash = fixt!(DnaHashB64);
 
     let create_clone_dna_recipe_input = CloneDnaRecipe {
         original_dna_hash: original_dna_hash.clone(),
