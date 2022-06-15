@@ -1,6 +1,7 @@
 //! ## hc_zome_membrane_invitations
 
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
@@ -37,7 +38,7 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
 
     create_link(
         DnaHash::from(clone_dna_recipe.original_dna_hash).retype(hash_type::Entry),
-        hash.clone().into(),
+        hash.clone(),
         HdkLinkType::Any,
         (),
     )?;
@@ -79,8 +80,8 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
     let invitee_pub_key = AgentPubKey::from(input.invitee);
 
     let header_hash = create_link(
-        invitee_pub_key.clone().into(),
-        EntryHash::from(clone_dna_recipe_hash).into(),
+        invitee_pub_key.clone(),
+        EntryHash::from(clone_dna_recipe_hash),
         HdkLinkType::Any,
         tag,
     )?;
@@ -107,7 +108,7 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
 pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMembraneInvitation>> {
     let agent_info = agent_info()?;
 
-    let links = get_links(agent_info.agent_initial_pubkey.clone().into(), None)?;
+    let links = get_links(agent_info.agent_initial_pubkey.clone(), None)?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
@@ -116,7 +117,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMem
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHashB64::from(EntryHash::from(link.target))) {
             let membrane_proof = match link.tag.0.len() > 0 {
-                true => Some(SerializedBytes::from(UnsafeBytes::from(link.tag.0))),
+                true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(link.tag.0)))),
                 false => None,
             };
 
