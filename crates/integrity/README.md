@@ -1,6 +1,6 @@
-# hc_zome_membrane_invitations
+# hc_zome_membrane_invitations_integrity
 
-MembraneInvitations zome for any Holochain app.
+MembraneInvitations integrity zome for any Holochain app.
 
 ## Documentation
 

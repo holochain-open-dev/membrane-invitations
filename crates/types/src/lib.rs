@@ -1,23 +1,21 @@
-use hdk::prelude::holo_hash::*;
-use hdk::prelude::*;
+use hdi::prelude::holo_hash::*;
+use hdi::prelude::*;
 
-#[hdk_entry(id = "clone_dna_recipe")]
+#[hdk_entry_helper]
 #[serde(rename_all = "camelCase")]
 #[derive(Clone)]
 pub struct CloneDnaRecipe {
-    pub original_dna_hash: DnaHashB64,
-
+    pub original_dna_hash: DnaHash,
     pub properties: SerializedBytes,
     pub uid: Option<String>,
-
-    pub resulting_dna_hash: DnaHashB64,
+    pub resulting_dna_hash: DnaHash,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InviteToJoinMembraneInput {
     pub clone_dna_recipe: CloneDnaRecipe,
-    pub invitee: AgentPubKeyB64,
+    pub invitee: AgentPubKey,
     pub membrane_proof: Option<MembraneProof>,
 }
 
@@ -25,8 +23,8 @@ pub struct InviteToJoinMembraneInput {
 #[serde(rename_all = "camelCase")]
 pub struct JoinMembraneInvitation {
     pub clone_dna_recipe: CloneDnaRecipe,
-    pub inviter: AgentPubKeyB64,
-    pub invitee: AgentPubKeyB64,
+    pub inviter: AgentPubKey,
+    pub invitee: AgentPubKey,
     pub membrane_proof: Option<MembraneProof>,
     pub timestamp: Timestamp,
 }

@@ -7,8 +7,9 @@ use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
 use hc_zome_membrane_invitations_types::*;
+use hc_zome_membrane_invitations_integrity::*;
 
-entry_defs![CloneDnaRecipe::entry_def()];
+
 
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
@@ -24,34 +25,32 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)
 }
 
-#[hdk_extern]
-fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
-    let sig: Signal = signal.decode()?;
-    Ok(emit_signal(&sig)?)
-}
+
+
 
 #[hdk_extern]
-pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult<EntryHashB64> {
+pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult<EntryHash> {
     let hash = hash_entry(&clone_dna_recipe)?;
 
-    create_entry(&clone_dna_recipe)?;
+    create_entry(EntryTypes::CloneDnaRecipe(clone_dna_recipe.clone()))?;
 
     create_link(
         DnaHash::from(clone_dna_recipe.original_dna_hash).retype(hash_type::Entry),
         hash.clone(),
-        HdkLinkType::Any,
+        LinkTypes::DnaHashToRecipe,
         (),
     )?;
 
-    Ok(hash.into())
+    Ok(hash)
 }
 
 #[hdk_extern]
 pub fn get_clone_recipes_for_dna(
-    original_dna_hash: DnaHashB64,
-) -> ExternResult<BTreeMap<EntryHashB64, CloneDnaRecipe>> {
+    original_dna_hash: DnaHash,
+) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let links = get_links(
         DnaHash::from(original_dna_hash).retype(hash_type::Entry),
+        LinkTypes::DnaHashToRecipe,
         None,
     )?;
 
@@ -63,13 +62,13 @@ pub fn get_clone_recipes_for_dna(
 #[serde(rename_all = "camelCase")]
 pub enum Signal {
     NewInvitation {
-        invitation_header_hash: HeaderHashB64,
+        invitation_action_hash: ActionHash,
         invitation: JoinMembraneInvitation,
     },
 }
 
 #[hdk_extern]
-pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<HeaderHashB64> {
+pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<ActionHash> {
     let tag: LinkTag = match input.membrane_proof.clone() {
         None => LinkTag::new(vec![]),
         Some(mp) => LinkTag::new(mp.bytes().clone()),
@@ -77,61 +76,65 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
 
     let clone_dna_recipe_hash = hash_entry(&input.clone_dna_recipe)?;
 
-    let invitee_pub_key = AgentPubKey::from(input.invitee);
+    let invitee_pub_key = input.invitee;
 
-    let header_hash = create_link(
+    // create link from invitee to the clone dna recipe
+    let action_hash = create_link(
         invitee_pub_key.clone(),
         EntryHash::from(clone_dna_recipe_hash),
-        HdkLinkType::Any,
+        LinkTypes::InviteeToRecipe,
         tag,
     )?;
 
     let invitation = JoinMembraneInvitation {
         invitee: invitee_pub_key.clone().into(),
         clone_dna_recipe: input.clone_dna_recipe,
-        inviter: agent_info()?.agent_initial_pubkey.into(),
+        inviter: agent_info()?.agent_initial_pubkey,
         membrane_proof: input.membrane_proof,
         timestamp: sys_time()?,
     };
 
     let signal = Signal::NewInvitation {
         invitation,
-        invitation_header_hash: header_hash.clone().into(),
+        invitation_action_hash: action_hash.clone(),
     };
 
-    remote_signal(ExternIO::encode(signal)?, vec![invitee_pub_key])?;
+    let encoded_signal = ExternIO::encode(signal)
+        .map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
 
-    Ok(header_hash.into())
+    remote_signal(encoded_signal, vec![invitee_pub_key])?;
+
+    Ok(action_hash)
 }
 
 #[hdk_extern]
-pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMembraneInvitation>> {
+pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<ActionHash, JoinMembraneInvitation>> {
     let agent_info = agent_info()?;
 
-    let links = get_links(agent_info.agent_initial_pubkey.clone(), None)?;
+    let links = get_links(agent_info.agent_initial_pubkey.clone(), LinkTypes::InviteeToRecipe, None)?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
-    let mut my_invitations: BTreeMap<HeaderHashB64, JoinMembraneInvitation> = BTreeMap::new();
+    let mut my_invitations: BTreeMap<ActionHash, JoinMembraneInvitation> = BTreeMap::new();
 
     for link in links {
-        if let Some(recipe) = recipes.get(&EntryHashB64::from(EntryHash::from(link.target))) {
+        if let Some(recipe) = recipes.get(&EntryHash::from(link.target)) {
             let membrane_proof = match link.tag.0.len() > 0 {
                 true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(link.tag.0)))),
                 false => None,
             };
 
             // Remove this get when the link struct includes author
-            if let Some(el) = get(link.create_link_hash.clone(), GetOptions::default())? {
+            if let Some(record) = get(link.create_link_hash.clone(), GetOptions::default())? {
                 let invitation = JoinMembraneInvitation {
                     clone_dna_recipe: recipe.clone(),
-                    inviter: el.header().author().clone().into(),
-                    invitee: agent_info.agent_initial_pubkey.clone().into(),
+                    inviter: record.action().author().clone(),
+                    invitee: agent_info.agent_initial_pubkey.clone(),
                     membrane_proof,
                     timestamp: link.timestamp,
                 };
 
-                my_invitations.insert(link.create_link_hash.into(), invitation);
+                my_invitations.insert(link.create_link_hash, invitation);
             }
         }
     }
@@ -141,7 +144,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<HeaderHashB64, JoinMem
 
 fn get_clone_dna_recipes(
     links: &Vec<Link>,
-) -> ExternResult<BTreeMap<EntryHashB64, CloneDnaRecipe>> {
+) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
         .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))
@@ -149,13 +152,12 @@ fn get_clone_dna_recipes(
 
     let elements = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
 
-    let clones: BTreeMap<EntryHashB64, CloneDnaRecipe> = elements
+    let clones: BTreeMap<EntryHash, CloneDnaRecipe> = elements
         .into_iter()
-        .filter_map(|e| e)
-        .filter_map(|el| {
-            let recipe: Option<CloneDnaRecipe> = el.entry().to_app_option().unwrap_or(None);
-
-            recipe.map(|r| (el.header().entry_hash().unwrap().clone().into(), r))
+        .filter_map(|r| r)
+        .filter_map(|record| {
+            let recipe: Option<CloneDnaRecipe> = record.entry().to_app_option().unwrap_or(None);
+            recipe.map(|r| (record.action().entry_hash().unwrap().clone(), r))
         })
         .collect();
 
@@ -163,8 +165,7 @@ fn get_clone_dna_recipes(
 }
 
 #[hdk_extern]
-pub fn remove_invitation(invitation_link_hash: HeaderHashB64) -> ExternResult<()> {
+pub fn remove_invitation(invitation_link_hash: ActionHash) -> ExternResult<()> {
     delete_link(invitation_link_hash.into())?;
-
     Ok(())
 }

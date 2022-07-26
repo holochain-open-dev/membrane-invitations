@@ -1,6 +1,7 @@
 [workspace]
 members = [
-  "crates/zome",
+  "crates/coordinator",
+  "crates/integrity",
   "crates/types",
 ]
 resolver = "2"

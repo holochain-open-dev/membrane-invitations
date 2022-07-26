@@ -1,8 +1,16 @@
 ---
 manifest_version: "1"
 name: membrane_invitations
-uuid: 00000000-0000-0000-0000-000000000000
-properties: ~
-zomes:
-  - name: membrane_invitations
-    bundled: ../../target/wasm32-unknown-unknown/release/hc_zome_membrane_invitations.wasm
+integrity:
+  uuid: 00000000-0000-0000-0000-000000000000
+  properties: ~
+  zomes:
+    - name: membrane_invitations_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/hc_zome_membrane_invitations_integrity.wasm
+coordinator:
+  zomes:
+    - name: membrane_invitations
+      bundled: ../../target/wasm32-unknown-unknown/release/hc_zome_membrane_invitations_coordinator.wasm
+      dependencies:
+        - name: membrane_invitations_integrity
+

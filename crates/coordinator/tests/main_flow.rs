@@ -29,8 +29,8 @@ async fn main_flow() {
     let alice_zome = alice.zome("membrane_invitations");
     let bob_zome = bobbo.zome("membrane_invitations");
 
-    let original_dna_hash = fixt!(DnaHashB64);
-    let resulting_dna_hash = fixt!(DnaHashB64);
+    let original_dna_hash = fixt!(DnaHash);
+    let resulting_dna_hash = fixt!(DnaHash);
 
     let create_clone_dna_recipe_input = CloneDnaRecipe {
         original_dna_hash: original_dna_hash.clone(),
@@ -69,13 +69,13 @@ async fn main_flow() {
         membrane_proof: Some(Arc::new(SerializedBytes::try_from(()).unwrap())),
     };
 
-    let invitation_header_hash: HeaderHashB64 = conductors[0]
+    let invitation_header_hash: ActionHash = conductors[0]
         .call(&alice_zome, "invite_to_join_membrane", invitation)
         .await;
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let bobs_invitations: BTreeMap<HeaderHashB64, JoinMembraneInvitation> = conductors[1]
+    let bobs_invitations: BTreeMap<ActionHash, JoinMembraneInvitation> = conductors[1]
         .call(&bob_zome, "get_my_invitations", ())
         .await;
 
