@@ -1,13 +1,14 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
-import { HeaderHashB64 } from "@holochain-open-dev/core-types";
+import { HoloHashMap } from "@holochain-open-dev/utils";
+import { ActionHash } from "@holochain/client";
 import { Writable } from "svelte/store";
 import { MembraneInvitationsService } from "./membrane-invitations-service";
 import { JoinMembraneInvitation } from "./types";
 export declare class MembraneInvitationsStore {
     protected cellClient: CellClient;
     service: MembraneInvitationsService;
-    myInvitations: Writable<Record<HeaderHashB64, JoinMembraneInvitation>>;
+    myInvitations: Writable<HoloHashMap<JoinMembraneInvitation>>;
     constructor(cellClient: CellClient, zomeName?: string);
-    fetchMyInvitations(): Promise<import("svelte/store").Readable<Record<string, JoinMembraneInvitation>>>;
-    removeInvitation(invitationHeaderHash: HeaderHashB64): Promise<void>;
+    fetchMyInvitations(): Promise<import("svelte/store").Readable<HoloHashMap<JoinMembraneInvitation>>>;
+    removeInvitation(invitationHeaderHash: ActionHash): Promise<void>;
 }

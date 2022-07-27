@@ -1,11 +1,6 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
-import {
-  AgentPubKeyB64,
-  DnaHashB64,
-  EntryHashB64,
-  HeaderHashB64,
-} from "@holochain-open-dev/core-types";
-import { MembraneProof } from "@holochain/client";
+import { HoloHashMap } from '@holochain-open-dev/utils';
+import { MembraneProof, EntryHash, ActionHash, DnaHash, AgentPubKey } from "@holochain/client";
 import { CloneDnaRecipe, JoinMembraneInvitation } from "./types";
 
 export class MembraneInvitationsService {
@@ -14,21 +9,21 @@ export class MembraneInvitationsService {
     protected zomeName = "membrane_invitations"
   ) {}
 
-  public createCloneDnaRecipe(recipe: CloneDnaRecipe): Promise<EntryHashB64> {
+  public createCloneDnaRecipe(recipe: CloneDnaRecipe): Promise<EntryHash> {
     return this.callZome("create_clone_dna_recipe", recipe);
   }
 
   public getCloneRecipesForDna(
-    originalDnaHash: DnaHashB64
-  ): Promise<Record<EntryHashB64, CloneDnaRecipe>> {
+    originalDnaHash: DnaHash
+  ): Promise<HoloHashMap<CloneDnaRecipe>> { // keys of type EntryHash
     return this.callZome("get_clone_recipes_for_dna", originalDnaHash);
   }
 
   public inviteToJoinMembrane(
     cloneDnaRecipe: CloneDnaRecipe,
-    invitee: AgentPubKeyB64,
+    invitee: AgentPubKey,
     membraneProof: MembraneProof | undefined
-  ): Promise<Record<EntryHashB64, CloneDnaRecipe>> {
+  ): Promise<ActionHash> {
     return this.callZome("invite_to_join_membrane", {
       cloneDnaRecipe,
       invitee,
@@ -37,12 +32,12 @@ export class MembraneInvitationsService {
   }
 
   public getMyInvitations(): Promise<
-    Record<HeaderHashB64, JoinMembraneInvitation>
+    [ActionHash, JoinMembraneInvitation][] // keys of type ActionHash
   > {
     return this.callZome("get_my_invitations", null);
   }
 
-  public removeInvitation(invitationLinkHash: HeaderHashB64): Promise<void> {
+  public removeInvitation(invitationLinkHash: ActionHash): Promise<void> {
     return this.callZome("remove_invitation", invitationLinkHash);
   }
 

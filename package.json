@@ -16,9 +16,10 @@
   },
   "type": "module",
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.5.3",
-    "@holochain-open-dev/core-types": "^0.2.0",
-    "@holochain/client": "^0.4.1",
+    "@holochain-open-dev/cell-client": "^0.6.1",
+    "@holochain-open-dev/core-types": "^0.4.0",
+    "@holochain-open-dev/utils": "^0.2.4",
+    "@holochain/client": "^0.6.0",
     "lit-svelte-stores": "^0.1.9",
     "svelte": "^3.48.0"
   },
