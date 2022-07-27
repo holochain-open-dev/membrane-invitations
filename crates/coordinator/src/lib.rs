@@ -108,14 +108,14 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
 }
 
 #[hdk_extern]
-pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<ActionHash, JoinMembraneInvitation>> {
+pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneInvitation)>> {
     let agent_info = agent_info()?;
 
     let links = get_links(agent_info.agent_initial_pubkey.clone(), LinkTypes::InviteeToRecipe, None)?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
-    let mut my_invitations: BTreeMap<ActionHash, JoinMembraneInvitation> = BTreeMap::new();
+    let mut my_invitations: Vec<(ActionHash, JoinMembraneInvitation)> = Vec::new();
 
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHash::from(link.target)) {
@@ -134,7 +134,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<BTreeMap<ActionHash, JoinMembra
                     timestamp: link.timestamp,
                 };
 
-                my_invitations.insert(link.create_link_hash, invitation);
+                my_invitations.push((link.create_link_hash, invitation));
             }
         }
     }

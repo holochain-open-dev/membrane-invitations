@@ -1,19 +1,16 @@
-import { AgentPubKeyB64, DnaHashB64 } from "@holochain-open-dev/core-types";
-import { MembraneProof, Timestamp } from "@holochain/client";
+import { AgentPubKey, DnaHash, MembraneProof, Timestamp } from "@holochain/client";
 
 export interface CloneDnaRecipe {
-  originalDnaHash: DnaHashB64;
-
+  originalDnaHash: DnaHash;
   properties: any;
   uid: string | undefined;
-
-  resultingDnaHash: DnaHashB64;
+  resultingDnaHash: DnaHash;
 }
 
 export interface JoinMembraneInvitation {
   cloneDnaRecipe: CloneDnaRecipe;
-  inviter: AgentPubKeyB64;
-  invitee: AgentPubKeyB64;
+  inviter: AgentPubKey;
+  invitee: AgentPubKey;
   membraneProof: MembraneProof | undefined;
   timestamp: Timestamp;
 }
