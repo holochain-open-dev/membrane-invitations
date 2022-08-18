@@ -9,7 +9,7 @@
     "start": "npm run network 2",
     "network": "hc s clean && npm run build:happ && concurrently-repeat \"npm run start:agent\"",
     "start:agent": "cross-env HC_PORT=$(port) concurrently \"npm run playground\" \"npm run start:happ\" \"npm run start -w @holochain-open-dev/membrane-invitations\"",
-    "test": "npm run build:happ && cargo t",
+    "test": "npm run build:happ && cargo t -- --nocapture",
     "start:happ": "RUST_LOG=warn hc s generate ./workdir/happ/membrane-invitations-test.happ --run=$HC_PORT network  --bootstrap https://bootstrap-staging.holo.host/ quic",
     "build:happ": "npm run build:dna && hc app pack workdir/happ",
     "build:dna": "npm run build:zome && hc dna pack workdir/dna",

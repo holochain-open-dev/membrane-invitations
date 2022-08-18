@@ -32,6 +32,8 @@ async fn main_flow() {
     let original_dna_hash = fixt!(DnaHash);
     let resulting_dna_hash = fixt!(DnaHash);
 
+
+
     let create_clone_dna_recipe_input = CloneDnaRecipe {
         original_dna_hash: original_dna_hash.clone(),
 
@@ -41,7 +43,9 @@ async fn main_flow() {
         resulting_dna_hash,
     };
 
-    let clone_dna_recipe_hash: EntryHashB64 = conductors[0]
+    println!("Calling zome create_clone_dna_recipe");
+
+    let clone_dna_recipe_hash: EntryHash = conductors[0]
         .call(
             &alice_zome,
             "create_clone_dna_recipe",
@@ -49,7 +53,11 @@ async fn main_flow() {
         )
         .await;
 
-    let clone_recipes: BTreeMap<EntryHashB64, CloneDnaRecipe> = conductors[0]
+
+    println!("Calling zome create_clone_dna_recipe");
+
+
+    let clone_recipes: BTreeMap<EntryHash, CloneDnaRecipe> = conductors[0]
         .call(
             &alice_zome,
             "get_clone_recipes_for_dna",
@@ -69,21 +77,26 @@ async fn main_flow() {
         membrane_proof: Some(Arc::new(SerializedBytes::try_from(()).unwrap())),
     };
 
-    let invitation_header_hash: ActionHash = conductors[0]
+    println!("Calling zome invite_to_join_membrane");
+
+
+    let _invitation_header_hash: ActionHash = conductors[0]
         .call(&alice_zome, "invite_to_join_membrane", invitation)
         .await;
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let bobs_invitations: BTreeMap<ActionHash, JoinMembraneInvitation> = conductors[1]
+    println!("Calling zome get_my_invitations");
+
+    let bobs_invitations: Vec<(ActionHash, JoinMembraneInvitation)> = conductors[1]
         .call(&bob_zome, "get_my_invitations", ())
         .await;
 
     assert_eq!(bobs_invitations.len(), 1);
     assert_eq!(
         bobs_invitations
-            .get(&invitation_header_hash)
-            .unwrap()
+            .first()
+            .unwrap().1
             .clone_dna_recipe
             .original_dna_hash,
         original_dna_hash
