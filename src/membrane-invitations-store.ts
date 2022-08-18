@@ -8,8 +8,8 @@ import { JoinMembraneInvitation } from "./types";
 export class MembraneInvitationsStore {
   public service: MembraneInvitationsService;
 
-  myInvitations: Writable<HoloHashMap<JoinMembraneInvitation>> = // keys of type ActionHash
-    writable(new HoloHashMap<JoinMembraneInvitation>());
+  myInvitations: Writable<HoloHashMap<ActionHash, JoinMembraneInvitation>> = // keys of type ActionHash
+    writable(new HoloHashMap<ActionHash, JoinMembraneInvitation>());
 
   constructor(
     protected cellClient: CellClient,
@@ -29,7 +29,7 @@ export class MembraneInvitationsStore {
   }
 
   async fetchMyInvitations() {
-    let myInvitations = new HoloHashMap<JoinMembraneInvitation>();
+    let myInvitations = new HoloHashMap<ActionHash, JoinMembraneInvitation>();
     const invitationsArray: [ActionHash, JoinMembraneInvitation][] = await this.service.getMyInvitations();
     invitationsArray.forEach(([actionHash, joinMembraneInvitation]) => {
       myInvitations.put(actionHash, joinMembraneInvitation);

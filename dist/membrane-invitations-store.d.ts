@@ -7,8 +7,8 @@ import { JoinMembraneInvitation } from "./types";
 export declare class MembraneInvitationsStore {
     protected cellClient: CellClient;
     service: MembraneInvitationsService;
-    myInvitations: Writable<HoloHashMap<JoinMembraneInvitation>>;
+    myInvitations: Writable<HoloHashMap<ActionHash, JoinMembraneInvitation>>;
     constructor(cellClient: CellClient, zomeName?: string);
-    fetchMyInvitations(): Promise<import("svelte/store").Readable<HoloHashMap<JoinMembraneInvitation>>>;
+    fetchMyInvitations(): Promise<import("svelte/store").Readable<HoloHashMap<Uint8Array, JoinMembraneInvitation>>>;
     removeInvitation(invitationHeaderHash: ActionHash): Promise<void>;
 }

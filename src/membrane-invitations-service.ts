@@ -15,7 +15,7 @@ export class MembraneInvitationsService {
 
   public getCloneRecipesForDna(
     originalDnaHash: DnaHash
-  ): Promise<HoloHashMap<CloneDnaRecipe>> { // keys of type EntryHash
+  ): Promise<HoloHashMap<EntryHash, CloneDnaRecipe>> { // keys of type EntryHash
     return this.callZome("get_clone_recipes_for_dna", originalDnaHash);
   }
 
