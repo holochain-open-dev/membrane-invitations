@@ -1,0 +1,35 @@
+{
+  "name": "@holochain-open-dev/membrane-invitations",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch --preserveWatchOutput",
+    "publish-to-branch": "npm run build && rimraf node_modules && gh-pages -d . -b ui-build-hdk-0.0.146 && cd .. && npm i"
+  },
+  "type": "module",
+  "dependencies": {
+    "@holochain-open-dev/cell-client": "^0.7.1",
+    "@holochain-open-dev/core-types": "^0.4.0",
+    "@holochain-open-dev/utils": "^0.3.1",
+    "@holochain/client": "^0.7.0",
+    "lit-svelte-stores": "^0.1.9",
+    "svelte": "^3.48.0"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.4",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.5.0",
+    "watch-cli": "^0.2.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
