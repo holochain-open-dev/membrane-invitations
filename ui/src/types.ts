@@ -3,7 +3,7 @@ import { AgentPubKey, DnaHash, MembraneProof, Timestamp } from "@holochain/clien
 export interface CloneDnaRecipe {
   originalDnaHash: DnaHash;
   properties: any;
-  uid: string | undefined;
+  networkSeed: string | undefined;
   resultingDnaHash: DnaHash;
 }
 

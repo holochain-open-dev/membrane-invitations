@@ -7,7 +7,7 @@ use hdi::prelude::*;
 pub struct CloneDnaRecipe {
     pub original_dna_hash: DnaHash,
     pub properties: SerializedBytes,
-    pub uid: Option<String>,
+    pub network_seed: Option<String>,
     pub resulting_dna_hash: DnaHash,
 }
 
