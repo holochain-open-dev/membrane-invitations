@@ -69,6 +69,7 @@ pub enum Signal {
 
 #[hdk_extern]
 pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<ActionHash> {
+
     let tag: LinkTag = match input.membrane_proof.clone() {
         None => LinkTag::new(vec![]),
         Some(mp) => LinkTag::new(mp.bytes().clone()),
@@ -107,6 +108,17 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
     Ok(action_hash)
 }
 
+
+
+#[hdk_extern]
+fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
+    let sig: Signal = signal.decode()
+        .map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
+    Ok(emit_signal(&sig)?)
+}
+
+
+
 #[hdk_extern]
 pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneInvitation)>> {
     let agent_info = agent_info()?;
@@ -119,6 +131,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHash::from(link.target)) {
+
             let membrane_proof = match link.tag.0.len() > 0 {
                 true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(link.tag.0)))),
                 false => None,
@@ -133,11 +146,11 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
                     membrane_proof,
                     timestamp: link.timestamp,
                 };
-
                 my_invitations.push((link.create_link_hash, invitation));
             }
         }
     }
+
 
     Ok(my_invitations)
 }
@@ -150,9 +163,9 @@ fn get_clone_dna_recipes(
         .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))
         .collect();
 
-    let elements = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
+    let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
 
-    let clones: BTreeMap<EntryHash, CloneDnaRecipe> = elements
+    let clones: BTreeMap<EntryHash, CloneDnaRecipe> = records
         .into_iter()
         .filter_map(|r| r)
         .filter_map(|record| {

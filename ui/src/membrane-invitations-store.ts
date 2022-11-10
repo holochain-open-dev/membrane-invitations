@@ -19,14 +19,15 @@ export class MembraneInvitationsStore {
 
     cellClient.addSignalHandler((signal) => {
       const payload = signal.data.payload;
-      if (payload.type === "NewInvitation") {
+      if (payload.type === "newInvitation") {
         this.myInvitations.update((i) => {
-          i[payload.invitationHeaderHash] = payload.invitation;
+          i.put(payload.invitation_action_hash, payload.invitation);
           return i;
         });
       }
     });
   }
+
 
   async fetchMyInvitations() {
     let myInvitations = new HoloHashMap<ActionHash, JoinMembraneInvitation>();
