@@ -1,6 +1,13 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
-import { HoloHashMap } from '@holochain-open-dev/utils';
-import { MembraneProof, EntryHash, ActionHash, DnaHash, AgentPubKey } from "@holochain/client";
+import { HoloHashMap } from "@holochain-open-dev/utils";
+import {
+  MembraneProof,
+  Record,
+  EntryHash,
+  ActionHash,
+  DnaHash,
+  AgentPubKey,
+} from "@holochain/client";
 import { CloneDnaRecipe, JoinMembraneInvitation } from "./types";
 
 export class MembraneInvitationsService {
@@ -15,7 +22,8 @@ export class MembraneInvitationsService {
 
   public getCloneRecipesForDna(
     originalDnaHash: DnaHash
-  ): Promise<HoloHashMap<EntryHash, CloneDnaRecipe>> { // keys of type EntryHash
+  ): Promise<Array<Record>> {
+    // keys of type EntryHash
     return this.callZome("get_clone_recipes_for_dna", originalDnaHash);
   }
 

@@ -6,10 +6,8 @@ use std::sync::Arc;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
-use hc_zome_membrane_invitations_types::*;
 use hc_zome_membrane_invitations_integrity::*;
-
-
+use hc_zome_membrane_invitations_types::*;
 
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
@@ -24,9 +22,6 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
     })?;
     Ok(InitCallbackResult::Pass)
 }
-
-
-
 
 #[hdk_extern]
 pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult<EntryHash> {
@@ -45,16 +40,22 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
 }
 
 #[hdk_extern]
-pub fn get_clone_recipes_for_dna(
-    original_dna_hash: DnaHash,
-) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
+pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec<Record>> {
     let links = get_links(
         DnaHash::from(original_dna_hash).retype(hash_type::Entry),
         LinkTypes::DnaHashToRecipe,
         None,
     )?;
+    let get_inputs = links
+        .iter()
+        .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))
+        .collect();
 
-    get_clone_dna_recipes(&links)
+    let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
+
+    let clones = records.into_iter().filter_map(|r| r).collect();
+
+    Ok(clones)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -69,7 +70,6 @@ pub enum Signal {
 
 #[hdk_extern]
 pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult<ActionHash> {
-
     let tag: LinkTag = match input.membrane_proof.clone() {
         None => LinkTag::new(vec![]),
         Some(mp) => LinkTag::new(mp.bytes().clone()),
@@ -100,30 +100,31 @@ pub fn invite_to_join_membrane(input: InviteToJoinMembraneInput) -> ExternResult
         invitation_action_hash: action_hash.clone(),
     };
 
-    let encoded_signal = ExternIO::encode(signal)
-        .map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
+    let encoded_signal =
+        ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
 
     remote_signal(encoded_signal, vec![invitee_pub_key])?;
 
     Ok(action_hash)
 }
 
-
-
 #[hdk_extern]
 fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
-    let sig: Signal = signal.decode()
+    let sig: Signal = signal
+        .decode()
         .map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
     Ok(emit_signal(&sig)?)
 }
-
-
 
 #[hdk_extern]
 pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneInvitation)>> {
     let agent_info = agent_info()?;
 
-    let links = get_links(agent_info.agent_initial_pubkey.clone(), LinkTypes::InviteeToRecipe, None)?;
+    let links = get_links(
+        agent_info.agent_initial_pubkey.clone(),
+        LinkTypes::InviteeToRecipe,
+        None,
+    )?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
@@ -131,9 +132,10 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 
     for link in links {
         if let Some(recipe) = recipes.get(&EntryHash::from(link.target)) {
-
             let membrane_proof = match link.tag.0.len() > 0 {
-                true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(link.tag.0)))),
+                true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(
+                    link.tag.0,
+                )))),
                 false => None,
             };
 
@@ -151,13 +153,10 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
         }
     }
 
-
     Ok(my_invitations)
 }
 
-fn get_clone_dna_recipes(
-    links: &Vec<Link>,
-) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
+fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
         .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))

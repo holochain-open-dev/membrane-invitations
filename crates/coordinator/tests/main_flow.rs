@@ -57,7 +57,7 @@ async fn main_flow() {
     println!("Calling zome create_clone_dna_recipe");
 
 
-    let clone_recipes: BTreeMap<EntryHash, CloneDnaRecipe> = conductors[0]
+    let clone_recipes: Vec<Record> = conductors[0]
         .call(
             &alice_zome,
             "get_clone_recipes_for_dna",
@@ -66,8 +66,10 @@ async fn main_flow() {
         .await;
 
     assert_eq!(clone_recipes.len(), 1);
+    
+    let clone_recipe_output: Option<CloneDnaRecipe> = clone_recipes[0].entry().unwrap().to_app_option().unwrap();
     assert_eq!(
-        clone_recipes.get(&clone_dna_recipe_hash).unwrap().original_dna_hash,
+        clone_recipe_output.unwrap().original_dna_hash,
         original_dna_hash
     );
 
