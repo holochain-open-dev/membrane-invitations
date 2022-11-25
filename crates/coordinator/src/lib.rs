@@ -48,7 +48,7 @@ pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec
     )?;
     let get_inputs = links
         .iter()
-        .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))
+        .map(|link| GetInput::new(AnyDhtHash::from(EntryHash::from(link.target.clone())), GetOptions::default()))
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
@@ -159,7 +159,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
-        .map(|link| GetInput::new(link.target.clone().into(), GetOptions::default()))
+        .map(|link| GetInput::new(AnyDhtHash::from(EntryHash::from(link.target.clone())), GetOptions::default()))
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
