@@ -15,11 +15,11 @@ name = "hc_zome_membrane_invitations_coordinator"
 
 [dependencies]
 derive_more = "0"
-serde = "1"
+serde = { workspace = true }
+hdk = { workspace = true }
 
 hc_zome_membrane_invitations_integrity = { path = "../integrity"}
 hc_zome_membrane_invitations_types = {path = "../types"}
-hdk = {version = "0.0.161", features = ["encoding"]}
 
 [dev-dependencies]
 fixt = "0.0.14"

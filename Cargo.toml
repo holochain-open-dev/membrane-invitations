@@ -1,13 +1,28 @@
+[profile.dev]
+opt-level = "z"
+
+[profile.release]
+opt-level = "z"
+
+
 [workspace]
 members = [
   "crates/coordinator",
   "crates/integrity",
   "crates/types",
 ]
-resolver = "2"
 
-[profile.dev]
-opt-level = "z"
 
-[profile.release]
-opt-level = "z"
+[workspace.dependencies]
+hdi = "=0.1.8"
+hdk = { version = "0.0.161", features = ["encoding"] }
+serde = "1"
+
+[workspace.dependencies.hc_zome_membrane_invitations_coordinator]
+path = "crates/coordinator"
+
+[workspace.dependencies.hc_zome_membrane_invitations_integrity]
+path = "crates/integrity"
+
+[workspace.dependencies.hc_zome_membrane_invitations_types]
+path = "crates/types"
