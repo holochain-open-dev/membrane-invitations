@@ -1,5 +1,4 @@
-import { CellClient } from "@holochain-open-dev/cell-client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { AppAgentClient } from "@holochain/client";
 import {
   MembraneProof,
   Record,
@@ -12,7 +11,7 @@ import { CloneDnaRecipe, JoinMembraneInvitation } from "./types";
 
 export class MembraneInvitationsService {
   constructor(
-    protected cellClient: CellClient,
+    protected appAgentClient: AppAgentClient,
     protected zomeName = "membrane_invitations"
   ) {}
 
@@ -50,6 +49,11 @@ export class MembraneInvitationsService {
   }
 
   private callZome(fn_name: string, payload: any) {
-    return this.cellClient.callZome(this.zomeName, fn_name, payload);
+    return this.appAgentClient.callZome({
+      role_name: "membrane_invitations",
+      zome_name: this.zomeName,
+      fn_name,
+      payload
+    });
   }
 }

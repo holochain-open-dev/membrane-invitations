@@ -3,7 +3,7 @@ manifest_version: "1"
 name: membrane-invitations-test
 description: ~
 roles:
-  - id: membrane_invitations
+  - name: membrane_invitations
     provisioning:
       strategy: create
       deferred: false

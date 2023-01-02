@@ -15,7 +15,7 @@ name = "hc_zome_membrane_invitations_integrity"
 
 [dependencies]
 derive_more = "0"
-serde = "1"
+serde = { workspace = true }
 
 hc_zome_membrane_invitations_types = {path = "../types"}
-hdi = "=0.1.2"
+hdi = { workspace = true }

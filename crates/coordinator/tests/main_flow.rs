@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use hc_zome_membrane_invitations_types::*;
@@ -45,7 +44,7 @@ async fn main_flow() {
 
     println!("Calling zome create_clone_dna_recipe");
 
-    let clone_dna_recipe_hash: EntryHash = conductors[0]
+    let _clone_dna_recipe_hash: EntryHash = conductors[0]
         .call(
             &alice_zome,
             "create_clone_dna_recipe",
@@ -66,8 +65,8 @@ async fn main_flow() {
         .await;
 
     assert_eq!(clone_recipes.len(), 1);
-    
-    let clone_recipe_output: Option<CloneDnaRecipe> = clone_recipes[0].entry().unwrap().to_app_option().unwrap();
+
+    let clone_recipe_output: Option<CloneDnaRecipe> = clone_recipes[0].entry().to_app_option().unwrap();
     assert_eq!(
         clone_recipe_output.unwrap().original_dna_hash,
         original_dna_hash
@@ -86,7 +85,7 @@ async fn main_flow() {
         .call(&alice_zome, "invite_to_join_membrane", invitation)
         .await;
 
-    consistency_10s(&[&alice, &bobbo]).await;
+    consistency_10s([&alice, &bobbo]).await;
 
     println!("Calling zome get_my_invitations");
 

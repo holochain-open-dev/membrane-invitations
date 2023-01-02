@@ -15,6 +15,6 @@ name = "hc_zome_membrane_invitations_types"
 
 [dependencies]
 derive_more = "0"
-serde = "1"
+serde = { workspace = true }
 
-hdi = "=0.1.2"
+hdi = { workspace = true }
