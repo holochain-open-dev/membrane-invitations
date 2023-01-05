@@ -1,5 +1,5 @@
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { ActionHash, AppAgentClient } from "@holochain/client";
+import { ActionHash, AppAgentClient, RoleName } from "@holochain/client";
 import { derived, Writable, writable } from "svelte/store";
 import { MembraneInvitationsService } from "./membrane-invitations-service";
 import { JoinMembraneInvitation } from "./types";
@@ -12,9 +12,11 @@ export class MembraneInvitationsStore {
 
   constructor(
     protected appAgentClient: AppAgentClient,
-    zomeName = "membrane_invitations"
+    protected roleName: RoleName,
+    protected zomeName = "membrane_invitations"
   ) {
-    this.service = new MembraneInvitationsService(appAgentClient, zomeName);
+
+    this.service = new MembraneInvitationsService(appAgentClient, roleName, zomeName);
 
     appAgentClient.on("signal", (signal) => {
       const payload = signal.data.payload;

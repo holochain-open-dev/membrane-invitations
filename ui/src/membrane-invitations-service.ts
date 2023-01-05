@@ -1,4 +1,4 @@
-import { AppAgentClient } from "@holochain/client";
+import { AppAgentClient, RoleName } from "@holochain/client";
 import {
   MembraneProof,
   Record,
@@ -12,6 +12,7 @@ import { CloneDnaRecipe, JoinMembraneInvitation } from "./types";
 export class MembraneInvitationsService {
   constructor(
     protected appAgentClient: AppAgentClient,
+    protected roleName: RoleName,
     protected zomeName = "membrane_invitations"
   ) {}
 
@@ -50,7 +51,7 @@ export class MembraneInvitationsService {
 
   private callZome(fn_name: string, payload: any) {
     return this.appAgentClient.callZome({
-      role_name: "membrane_invitations",
+      role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,
       payload
