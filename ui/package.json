@@ -1,6 +1,6 @@
 {
   "name": "@holochain-open-dev/membrane-invitations",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": "guillem.cordoba@gmail.com",
   "description": "Frontend module for the Holochain hc_zome_membrane_invitations zome",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@holochain-open-dev/core-types": "^0.6.3",
     "@holochain-open-dev/utils": "^0.8.0",
-    "@holochain/client": "^0.11.9",
+    "@holochain/client": "^0.12.0",
     "lit-svelte-stores": "^0.1.9",
     "svelte": "^3.48.0"
   },
