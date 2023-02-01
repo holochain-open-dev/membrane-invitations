@@ -1,4 +1,4 @@
-import { AgentPubKey, DnaHash, MembraneProof, Timestamp } from "@holochain/client";
+import { ActionHash, AgentPubKey, DnaHash, MembraneProof, Timestamp } from "@holochain/client";
 
 export interface CloneDnaRecipe {
   originalDnaHash: DnaHash;
@@ -15,3 +15,8 @@ export interface JoinMembraneInvitation {
   timestamp: Timestamp;
 }
 
+export type SignalPayload = {
+  type: "NewInvitation",
+  invitation_action_hash: ActionHash,
+  invitation: JoinMembraneInvitation,
+}

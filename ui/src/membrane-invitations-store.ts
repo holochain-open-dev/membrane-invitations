@@ -1,8 +1,8 @@
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { ActionHash, AppAgentClient, RoleName } from "@holochain/client";
+import { ActionHash, AppAgentClient, RoleName, Signal } from "@holochain/client";
 import { derived, Writable, writable } from "svelte/store";
 import { MembraneInvitationsService } from "./membrane-invitations-service";
-import { JoinMembraneInvitation } from "./types";
+import { JoinMembraneInvitation, SignalPayload } from "./types";
 
 export class MembraneInvitationsStore {
   public service: MembraneInvitationsService;
@@ -19,8 +19,8 @@ export class MembraneInvitationsStore {
     this.service = new MembraneInvitationsService(appAgentClient, roleName, zomeName);
 
     appAgentClient.on("signal", (signal) => {
-      const payload = signal.data.payload;
-      if (payload.type === "newInvitation") {
+      const payload = (signal.payload as SignalPayload);
+      if (payload.type === "NewInvitation") {
         this.myInvitations.update((i) => {
           i.put(payload.invitation_action_hash, payload.invitation);
           return i;
