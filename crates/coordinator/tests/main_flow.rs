@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use hc_zome_membrane_invitations_types::*;
 use ::fixt::fixt;
+use hc_zome_membrane_invitations_types::*;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
@@ -31,8 +31,6 @@ async fn main_flow() {
     let original_dna_hash = fixt!(DnaHash);
     let resulting_dna_hash = fixt!(DnaHash);
 
-
-
     let create_clone_dna_recipe_input = CloneDnaRecipe {
         original_dna_hash: original_dna_hash.clone(),
 
@@ -52,9 +50,7 @@ async fn main_flow() {
         )
         .await;
 
-
     println!("Calling zome create_clone_dna_recipe");
-
 
     let clone_recipes: Vec<Record> = conductors[0]
         .call(
@@ -66,7 +62,8 @@ async fn main_flow() {
 
     assert_eq!(clone_recipes.len(), 1);
 
-    let clone_recipe_output: Option<CloneDnaRecipe> = clone_recipes[0].entry().to_app_option().unwrap();
+    let clone_recipe_output: Option<CloneDnaRecipe> =
+        clone_recipes[0].entry().to_app_option().unwrap();
     assert_eq!(
         clone_recipe_output.unwrap().original_dna_hash,
         original_dna_hash
@@ -79,7 +76,6 @@ async fn main_flow() {
     };
 
     println!("Calling zome invite_to_join_membrane");
-
 
     let _invitation_header_hash: ActionHash = conductors[0]
         .call(&alice_zome, "invite_to_join_membrane", invitation)
@@ -97,7 +93,8 @@ async fn main_flow() {
     assert_eq!(
         bobs_invitations
             .first()
-            .unwrap().1
+            .unwrap()
+            .1
             .clone_dna_recipe
             .original_dna_hash,
         original_dna_hash

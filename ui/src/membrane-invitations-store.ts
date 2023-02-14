@@ -1,53 +1,28 @@
+import { ActionHash } from "@holochain/client";
+import { asyncReadable } from "@holochain-open-dev/stores";
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { ActionHash, AppAgentClient, RoleName, Signal } from "@holochain/client";
-import { derived, Writable, writable } from "svelte/store";
-import { MembraneInvitationsService } from "./membrane-invitations-service";
-import { JoinMembraneInvitation, SignalPayload } from "./types";
+import { MembraneInvitationsClient } from "./membrane-invitations-client";
+import { JoinMembraneInvitation } from "./types";
 
 export class MembraneInvitationsStore {
-  public service: MembraneInvitationsService;
+  constructor(public client: MembraneInvitationsClient) {}
 
-  myInvitations: Writable<HoloHashMap<ActionHash, JoinMembraneInvitation>> = // keys of type ActionHash
-    writable(new HoloHashMap<ActionHash, JoinMembraneInvitation>());
+  myInvitations = asyncReadable<
+    HoloHashMap<ActionHash, JoinMembraneInvitation>
+  >(async (set) => {
+    const invitations = await this.client.getMyInvitations();
+    set(invitations);
 
-  constructor(
-    protected appAgentClient: AppAgentClient,
-    protected roleName: RoleName,
-    protected zomeName = "membrane_invitations"
-  ) {
-
-    this.service = new MembraneInvitationsService(appAgentClient, roleName, zomeName);
-
-    appAgentClient.on("signal", (signal) => {
-      const payload = (signal.payload as SignalPayload);
+    return this.client.on("signal", (payload) => {
       if (payload.type === "NewInvitation") {
-        this.myInvitations.update((i) => {
-          i.put(payload.invitation_action_hash, payload.invitation);
-          return i;
-        });
+        invitations.set(payload.invitation_action_hash, payload.invitation);
+        set(invitations);
+      } else if (
+        payload.type === "EntryDeleted" &&
+        payload.original_app_entry.type === "CloneDnaRecipe"
+      ) {
+        invitations.delete(payload.action.hashed.content.deletes_address);
       }
     });
-  }
-
-
-  async fetchMyInvitations() {
-    let myInvitations = new HoloHashMap<ActionHash, JoinMembraneInvitation>();
-    const invitationsArray: [ActionHash, JoinMembraneInvitation][] = await this.service.getMyInvitations();
-    invitationsArray.forEach(([actionHash, joinMembraneInvitation]) => {
-      myInvitations.put(actionHash, joinMembraneInvitation);
-    })
-
-    this.myInvitations.set(myInvitations);
-
-    return derived(this.myInvitations, (i) => i);
-  }
-
-  async removeInvitation(invitationHeaderHash: ActionHash) {
-    await this.service.removeInvitation(invitationHeaderHash);
-
-    this.myInvitations.update((i) => {
-      i.delete(invitationHeaderHash);
-      return i;
-    });
-  }
+  });
 }

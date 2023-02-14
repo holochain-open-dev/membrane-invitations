@@ -7,19 +7,17 @@ use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
 use hc_zome_membrane_invitations_integrity::*;
-use hc_zome_membrane_invitations_types::*;
-
 #[hdk_extern]
-fn init(_: ()) -> ExternResult<InitCallbackResult> {
-    // grant unrestricted access to accept_cap_claim so other agents can send us claims
+pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let mut functions = BTreeSet::new();
-    functions.insert((zome_info()?.name, "recv_remote_signal".into()));
-    create_cap_grant(CapGrantEntry {
-        tag: "".into(),
-        // empty access converts to unrestricted
-        access: ().into(),
-        functions: GrantedFunctions::Listed(functions),
-    })?;
+    functions.insert((zome_info()?.name, FunctionName("recv_remote_signal".into())));
+    let cap_grant_entry: CapGrantEntry = CapGrantEntry::new(
+        String::from("ping pong signals"), // A string by which to later query for saved grants.
+        ().into(), // Unrestricted access means any external agent can call the extern
+        GrantedFunctions::Listed(functions),
+    );
+
+    create_cap_grant(cap_grant_entry)?;
     Ok(InitCallbackResult::Pass)
 }
 
@@ -48,7 +46,12 @@ pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec
     )?;
     let get_inputs = links
         .iter()
-        .map(|link| GetInput::new(EntryHash::from(link.target.clone()).into(), GetOptions::default()))
+        .map(|link| {
+            GetInput::new(
+                EntryHash::from(link.target.clone()).into(),
+                GetOptions::default(),
+            )
+        })
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
@@ -60,11 +63,31 @@ pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
-#[serde(rename_all = "camelCase")]
 pub enum Signal {
     NewInvitation {
         invitation_action_hash: ActionHash,
         invitation: JoinMembraneInvitation,
+    },
+    LinkCreated {
+        action: SignedActionHashed,
+        link_type: LinkTypes,
+    },
+    LinkDeleted {
+        action: SignedActionHashed,
+        link_type: LinkTypes,
+    },
+    EntryCreated {
+        action: SignedActionHashed,
+        app_entry: EntryTypes,
+    },
+    EntryUpdated {
+        action: SignedActionHashed,
+        app_entry: EntryTypes,
+        original_app_entry: EntryTypes,
+    },
+    EntryDeleted {
+        action: SignedActionHashed,
+        original_app_entry: EntryTypes,
     },
 }
 
@@ -159,7 +182,12 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
-        .map(|link| GetInput::new(EntryHash::from(link.target.clone()).into(), GetOptions::default()))
+        .map(|link| {
+            GetInput::new(
+                EntryHash::from(link.target.clone()).into(),
+                GetOptions::default(),
+            )
+        })
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
@@ -180,4 +208,105 @@ fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, 
 pub fn remove_invitation(invitation_link_hash: ActionHash) -> ExternResult<()> {
     delete_link(invitation_link_hash.into())?;
     Ok(())
+}
+#[hdk_extern(infallible)]
+pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
+    for action in committed_actions {
+        if let Err(err) = signal_action(action) {
+            error!("Error signaling new action: {:?}", err);
+        }
+    }
+}
+fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
+    match action.hashed.content.clone() {
+        Action::CreateLink(create_link) => {
+            if let Ok(Some(link_type)) =
+                LinkTypes::from_type(create_link.zome_index, create_link.link_type)
+            {
+                emit_signal(Signal::LinkCreated { action, link_type })?;
+            }
+            Ok(())
+        }
+        Action::DeleteLink(delete_link) => {
+            let record = get(delete_link.link_add_address.clone(), GetOptions::default())?.ok_or(
+                wasm_error!(WasmErrorInner::Guest(
+                    "Failed to fetch CreateLink action".to_string()
+                )),
+            )?;
+            match record.action() {
+                Action::CreateLink(create_link) => {
+                    if let Ok(Some(link_type)) =
+                        LinkTypes::from_type(create_link.zome_index, create_link.link_type)
+                    {
+                        emit_signal(Signal::LinkDeleted { action, link_type })?;
+                    }
+                    Ok(())
+                }
+                _ => {
+                    return Err(wasm_error!(WasmErrorInner::Guest(
+                        "Create Link should exist".to_string()
+                    )));
+                }
+            }
+        }
+        Action::Create(_create) => {
+            if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
+                emit_signal(Signal::EntryCreated { action, app_entry })?;
+            }
+            Ok(())
+        }
+        Action::Update(update) => {
+            if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
+                if let Ok(Some(original_app_entry)) =
+                    get_entry_for_action(&update.original_action_address)
+                {
+                    emit_signal(Signal::EntryUpdated {
+                        action,
+                        app_entry,
+                        original_app_entry,
+                    })?;
+                }
+            }
+            Ok(())
+        }
+        Action::Delete(delete) => {
+            if let Ok(Some(original_app_entry)) = get_entry_for_action(&delete.deletes_address) {
+                emit_signal(Signal::EntryDeleted {
+                    action,
+                    original_app_entry,
+                })?;
+            }
+            Ok(())
+        }
+        _ => Ok(()),
+    }
+}
+fn get_entry_for_action(action_hash: &ActionHash) -> ExternResult<Option<EntryTypes>> {
+    let record = match get_details(action_hash.clone(), GetOptions::default())? {
+        Some(Details::Record(record_details)) => record_details.record,
+        _ => {
+            return Ok(None);
+        }
+    };
+    let entry = match record.entry().as_option() {
+        Some(entry) => entry,
+        None => {
+            return Ok(None);
+        }
+    };
+    let (zome_index, entry_index) = match record.action().entry_type() {
+        Some(EntryType::App(AppEntryDef {
+            zome_index,
+            entry_index,
+            ..
+        })) => (zome_index, entry_index),
+        _ => {
+            return Ok(None);
+        }
+    };
+    Ok(EntryTypes::deserialize_from_type(
+        zome_index.clone(),
+        entry_index.clone(),
+        entry,
+    )?)
 }

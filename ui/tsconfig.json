@@ -15,6 +15,7 @@
     "inlineSources": true,
     "outDir": "dist",
     "declarationDir": "dist",
+    "skipLibCheck": true,
     "rootDir": "./src",
     "declaration": true,
     "incremental": true
