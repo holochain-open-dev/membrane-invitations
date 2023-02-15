@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ::fixt::fixt;
-use hc_zome_membrane_invitations_types::*;
+use hc_zome_membrane_invitations_integrity::*;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
