@@ -22,6 +22,7 @@ export class MembraneInvitationsStore {
         payload.original_app_entry.type === "CloneDnaRecipe"
       ) {
         invitations.delete(payload.action.hashed.content.deletes_address);
+        set(invitations);
       }
     });
   });

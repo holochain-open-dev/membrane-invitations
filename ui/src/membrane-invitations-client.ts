@@ -63,9 +63,9 @@ export class MembraneInvitationsClient {
     membraneProof: MembraneProof | undefined
   ): Promise<ActionHash> {
     return this.callZome("invite_to_join_membrane", {
-      cloneDnaRecipe,
+      clone_dna_recipe: cloneDnaRecipe,
       invitee,
-      membraneProof,
+      membrane_proof: membraneProof,
     });
   }
 

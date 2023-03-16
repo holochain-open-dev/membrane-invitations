@@ -48,7 +48,7 @@ export type MembraneInvitationsSignal =
 export type EntryTypes = { type: "CloneDnaRecipe" } & CloneDnaRecipe;
 
 export interface CloneDnaRecipe {
-  original_dnaHash: DnaHash;
+  original_dna_hash: DnaHash;
   properties: any;
   network_seed: string | undefined;
   resulting_dna_hash: DnaHash;
