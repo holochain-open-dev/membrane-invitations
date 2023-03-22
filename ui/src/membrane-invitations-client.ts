@@ -1,7 +1,4 @@
-import {
-  ActionHashMap,
-  isSignalFromCellWithRole,
-} from "@holochain-open-dev/utils";
+import { ActionHashMap, ZomeClient } from "@holochain-open-dev/utils";
 import {
   MembraneProof,
   Record,
@@ -10,40 +7,20 @@ import {
   DnaHash,
   AgentPubKey,
   AppAgentClient,
-  AppAgentCallZomeRequest,
 } from "@holochain/client";
-import { UnsubscribeFunction } from "emittery";
 import {
   CloneDnaRecipe,
   JoinMembraneInvitation,
   MembraneInvitationsSignal,
 } from "./types";
 
-export interface MembraneInvitationsEvents {
-  ["signal"]: MembraneInvitationsSignal;
-}
-
-export class MembraneInvitationsClient {
+export class MembraneInvitationsClient extends ZomeClient<MembraneInvitationsSignal> {
   constructor(
     public client: AppAgentClient,
     public roleName: string,
     public zomeName = "membrane_invitations"
-  ) {}
-
-  on<Name extends keyof MembraneInvitationsEvents>(
-    eventName: Name | readonly Name[],
-    listener: (
-      eventData: MembraneInvitationsEvents[Name]
-    ) => void | Promise<void>
-  ): UnsubscribeFunction {
-    return this.client.on(eventName, async (signal) => {
-      if (
-        (await isSignalFromCellWithRole(this.client, this.roleName, signal)) &&
-        this.zomeName === signal.zome_name
-      ) {
-        listener(signal.payload as MembraneInvitationsSignal);
-      }
-    });
+  ) {
+    super(client, roleName, zomeName);
   }
 
   public createCloneDnaRecipe(recipe: CloneDnaRecipe): Promise<EntryHash> {
@@ -77,15 +54,5 @@ export class MembraneInvitationsClient {
 
   public removeInvitation(invitationLinkHash: ActionHash): Promise<void> {
     return this.callZome("remove_invitation", invitationLinkHash);
-  }
-
-  private callZome(fn_name: string, payload: any) {
-    const req: AppAgentCallZomeRequest = {
-      role_name: this.roleName,
-      zome_name: this.zomeName,
-      fn_name,
-      payload,
-    };
-    return this.client.callZome(req);
   }
 }

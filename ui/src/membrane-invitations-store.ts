@@ -1,8 +1,8 @@
 import { ActionHash } from "@holochain/client";
 import { asyncReadable } from "@holochain-open-dev/stores";
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { MembraneInvitationsClient } from "./membrane-invitations-client";
-import { JoinMembraneInvitation } from "./types";
+import { MembraneInvitationsClient } from "./membrane-invitations-client.js";
+import { JoinMembraneInvitation } from "./types.js";
 
 export class MembraneInvitationsStore {
   constructor(public client: MembraneInvitationsClient) {}
@@ -13,7 +13,7 @@ export class MembraneInvitationsStore {
     const invitations = await this.client.getMyInvitations();
     set(invitations);
 
-    return this.client.on("signal", (payload) => {
+    return this.client.onSignal((payload) => {
       if (payload.type === "NewInvitation") {
         invitations.set(payload.invitation_action_hash, payload.invitation);
         set(invitations);
