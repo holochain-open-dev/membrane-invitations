@@ -1,6 +1,6 @@
 {
   "name": "@holochain-open-dev/membrane-invitations",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "guillem.cordoba@gmail.com",
   "description": "Frontend module for the Holochain hc_zome_membrane_invitations zome",
   "main": "./dist/index.js",

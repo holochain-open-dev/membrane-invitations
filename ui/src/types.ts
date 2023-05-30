@@ -52,6 +52,7 @@ export interface CloneDnaRecipe {
   properties: any;
   network_seed: string | undefined;
   resulting_dna_hash: DnaHash;
+  custom_content: Uint8Array;
 }
 
 export interface JoinMembraneInvitation {
