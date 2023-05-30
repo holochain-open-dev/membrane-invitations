@@ -4,7 +4,7 @@
   "workspaces": ["ui"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui\" \"npm run launch:happ\" \"holochain-playground\"",
+    "network": "hc s clean && npm run build:happ && UI_PORT=8888 concurrently \"npm start -w @holochain-open-dev/membrane-invitations\" \"npm run launch:happ\" \"holochain-playground\"",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "launch:happ": "echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/happ/membrane-invitations-test.happ --ui-port $UI_PORT network mdns",
     "build:happ": "npm run build:zome && hc app pack workdir/happ --recursive",

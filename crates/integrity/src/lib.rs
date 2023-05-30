@@ -9,6 +9,7 @@ pub struct CloneDnaRecipe {
     pub properties: SerializedBytes,
     pub network_seed: Option<String>,
     pub resulting_dna_hash: DnaHash,
+    pub custom_content: SerializedBytes,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
