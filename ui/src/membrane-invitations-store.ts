@@ -1,11 +1,19 @@
-import { ActionHash } from "@holochain/client";
-import { asyncReadable } from "@holochain-open-dev/stores";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { ActionHash, DnaHash } from "@holochain/client";
+import { asyncReadable, lazyLoadAndPoll } from "@holochain-open-dev/stores";
+import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+
 import { MembraneInvitationsClient } from "./membrane-invitations-client.js";
 import { JoinMembraneInvitation } from "./types.js";
 
 export class MembraneInvitationsStore {
   constructor(public client: MembraneInvitationsClient) {}
+
+  cloneDnaRecipes = new LazyHoloHashMap((originalDnaHash: DnaHash) =>
+    lazyLoadAndPoll(
+      async () => this.client.getCloneRecipesForDna(originalDnaHash),
+      5000
+    )
+  );
 
   myInvitations = asyncReadable<
     HoloHashMap<ActionHash, JoinMembraneInvitation>

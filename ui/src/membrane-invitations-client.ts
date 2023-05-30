@@ -1,4 +1,8 @@
-import { ActionHashMap, ZomeClient } from "@holochain-open-dev/utils";
+import {
+  ActionHashMap,
+  ZomeClient,
+  EntryRecord,
+} from "@holochain-open-dev/utils";
 import {
   MembraneProof,
   Record,
@@ -27,11 +31,15 @@ export class MembraneInvitationsClient extends ZomeClient<MembraneInvitationsSig
     return this.callZome("create_clone_dna_recipe", recipe);
   }
 
-  public getCloneRecipesForDna(
+  public async getCloneRecipesForDna(
     originalDnaHash: DnaHash
-  ): Promise<Array<Record>> {
-    // keys of type EntryHash
-    return this.callZome("get_clone_recipes_for_dna", originalDnaHash);
+  ): Promise<Array<EntryRecord<CloneDnaRecipe>>> {
+    const records: Record[] = await this.callZome(
+      "get_clone_recipes_for_dna",
+      originalDnaHash
+    );
+
+    return records.map((r) => new EntryRecord(r));
   }
 
   public inviteToJoinMembrane(
