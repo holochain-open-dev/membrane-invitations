@@ -21,7 +21,7 @@ hc_zome_membrane_invitations_integrity = { path = "../integrity", version = "0.1
 hdk = { workspace = true }
 
 [dev-dependencies]
-fixt = "0.1"
+fixt = "*"
 futures = { version = "0.3.1", default-features = false }
 hdk = { workspace = true, features = ["encoding", "test_utils"] }
 holochain = { workspace = true, default-features = false, features = [
