@@ -29,7 +29,7 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
     create_entry(EntryTypes::CloneDnaRecipe(clone_dna_recipe.clone()))?;
 
     create_link(
-        DnaHash::from(clone_dna_recipe.original_dna_hash).retype(hash_type::Entry),
+        dnahash_to_linkable(DnaHash::from(clone_dna_recipe.original_dna_hash)),
         hash.clone(),
         LinkTypes::DnaHashToRecipe,
         (),
@@ -41,7 +41,7 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
 #[hdk_extern]
 pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec<Record>> {
     let links = get_links(
-        DnaHash::from(original_dna_hash).retype(hash_type::Entry),
+        dnahash_to_linkable(DnaHash::from(original_dna_hash)),
         LinkTypes::DnaHashToRecipe,
         None,
     )?;
