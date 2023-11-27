@@ -47,7 +47,7 @@ pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec
     )?;
     let get_inputs = links
         .iter()
-        .filter_map(|link| link.target.into_any_dht_hash())
+        .filter_map(|link| link.target.to_owned().into_any_dht_hash())
         .map(|entry_hash| GetInput::new(entry_hash, GetOptions::default()))
         .collect();
 
@@ -182,7 +182,7 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
-        .filter_map(|link| link.target.into_any_dht_hash())
+        .filter_map(|link| link.target.to_owned().into_any_dht_hash())
         .map(|entry_hash| GetInput::new(entry_hash, GetOptions::default()))
         .collect();
 
