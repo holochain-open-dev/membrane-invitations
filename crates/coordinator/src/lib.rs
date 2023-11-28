@@ -7,6 +7,7 @@ use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
 use hc_zome_membrane_invitations_integrity::*;
+
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let mut functions = BTreeSet::new();
@@ -28,7 +29,7 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
     create_entry(EntryTypes::CloneDnaRecipe(clone_dna_recipe.clone()))?;
 
     create_link(
-        DnaHash::from(clone_dna_recipe.original_dna_hash).retype(hash_type::Entry),
+        dnahash_to_linkable(clone_dna_recipe.original_dna_hash),
         hash.clone(),
         LinkTypes::DnaHashToRecipe,
         (),
@@ -40,18 +41,14 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
 #[hdk_extern]
 pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec<Record>> {
     let links = get_links(
-        DnaHash::from(original_dna_hash).retype(hash_type::Entry),
+        dnahash_to_linkable(original_dna_hash),
         LinkTypes::DnaHashToRecipe,
         None,
     )?;
     let get_inputs = links
         .iter()
-        .map(|link| {
-            GetInput::new(
-                EntryHash::from(link.target.clone()).into(),
-                GetOptions::default(),
-            )
-        })
+        .filter_map(|link| link.target.to_owned().into_any_dht_hash())
+        .map(|entry_hash| GetInput::new(entry_hash, GetOptions::default()))
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;
@@ -154,7 +151,10 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
     let mut my_invitations: Vec<(ActionHash, JoinMembraneInvitation)> = Vec::new();
 
     for link in links {
-        if let Some(recipe) = recipes.get(&EntryHash::from(link.target)) {
+        if let Some(recipe) = recipes.get(
+            &EntryHash::try_from(link.target)
+                .map_err(|err| wasm_error!(WasmErrorInner::from(err)))?,
+        ) {
             let membrane_proof = match link.tag.0.len() > 0 {
                 true => Some(Arc::new(SerializedBytes::from(UnsafeBytes::from(
                     link.tag.0,
@@ -182,12 +182,8 @@ pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneIn
 fn get_clone_dna_recipes(links: &Vec<Link>) -> ExternResult<BTreeMap<EntryHash, CloneDnaRecipe>> {
     let get_inputs = links
         .iter()
-        .map(|link| {
-            GetInput::new(
-                EntryHash::from(link.target.clone()).into(),
-                GetOptions::default(),
-            )
-        })
+        .filter_map(|link| link.target.to_owned().into_any_dht_hash())
+        .map(|entry_hash| GetInput::new(entry_hash, GetOptions::default()))
         .collect();
 
     let records = HDK.with(|hdk| hdk.borrow().get(get_inputs))?;

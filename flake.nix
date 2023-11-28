@@ -1,23 +1,24 @@
 {
   description = "Template for Holochain app development";
-
+  
   inputs = {
-    versions.url  = "github:holochain/holochain?dir=versions/0_1";
+    nixpkgs.follows = "holochain/nixpkgs";
 
-    holochain-flake.url = "github:holochain/holochain";
-    holochain-flake.inputs.versions.follows = "versions";
+    versions.url = "github:holochain/holochain?dir=versions/0_2";
 
-    nixpkgs.follows = "holochain-flake/nixpkgs";
-    flake-parts.follows = "holochain-flake/flake-parts";
+    holochain = {
+      url = "github:holochain/holochain";
+      inputs.versions.follows = "versions";
+    };
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
+  outputs = inputs @ { ... }:
+    inputs.holochain.inputs.flake-parts.lib.mkFlake
       {
         inherit inputs;
       }
       {
-        systems = builtins.attrNames inputs.holochain-flake.devShells;
+        systems = builtins.attrNames inputs.holochain.devShells;
         perSystem =
           { inputs'
           , config
@@ -27,17 +28,12 @@
           , ...
           }: {
             devShells.default = pkgs.mkShell {
-              inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
-              packages = [
-                pkgs.nodejs-18_x
+              inputsFrom = [ inputs'.holochain.devShells.holonix ];
+              packages = with pkgs; [
+                nodejs-18_x
                 # more packages go here
-                pkgs.cargo-nextest
+                cargo-nextest
               ];
-
-              shellHook = ''
-                unset CARGO_TARGET_DIR
-                unset CARGO_HOME
-              '';
             };
           };
       };

@@ -35,6 +35,7 @@ async fn main_flow() {
         original_dna_hash: original_dna_hash.clone(),
 
         properties: SerializedBytes::try_from(()).unwrap(),
+        custom_content: SerializedBytes::try_from(()).unwrap(),
         network_seed: Some(String::from("hi")),
 
         resulting_dna_hash,

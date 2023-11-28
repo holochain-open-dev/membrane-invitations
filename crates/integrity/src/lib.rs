@@ -1,6 +1,7 @@
 //! ## hc_zome_membrane_invitations
 
 use hdi::prelude::*;
+use crate::holo_hash::{hash_type, HashType, HOLO_HASH_PREFIX_LEN};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
@@ -46,4 +47,9 @@ pub enum LinkTypes {
 #[hdk_extern]
 pub fn validate(_op: Op) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
+}
+
+// convert a `DnaHash` to an `ExternalHash` that is compatible with the `AnyLinkableHash` interface
+pub fn dnahash_to_linkable(hash: DnaHash) -> ExternalHash {
+    HoloHash::from_raw_36_and_type(hash.get_raw_36().to_vec(), hash_type::External)
 }
