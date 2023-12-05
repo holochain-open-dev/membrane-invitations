@@ -40,11 +40,14 @@ pub fn create_clone_dna_recipe(clone_dna_recipe: CloneDnaRecipe) -> ExternResult
 
 #[hdk_extern]
 pub fn get_clone_recipes_for_dna(original_dna_hash: DnaHash) -> ExternResult<Vec<Record>> {
-    let links = get_links(
-        dnahash_to_linkable(original_dna_hash),
-        LinkTypes::DnaHashToRecipe,
-        None,
-    )?;
+    let links = get_links(GetLinksInput {
+        base_address: dnahash_to_linkable(original_dna_hash).into(),
+        link_type: LinkTypes::DnaHashToRecipe.try_into_filter()?,
+        tag_prefix: None,
+        after: None,
+        before: None,
+        author: None,
+    })?;
     let get_inputs = links
         .iter()
         .filter_map(|link| link.target.to_owned().into_any_dht_hash())
@@ -139,12 +142,14 @@ fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
 #[hdk_extern]
 pub fn get_my_invitations(_: ()) -> ExternResult<Vec<(ActionHash, JoinMembraneInvitation)>> {
     let agent_info = agent_info()?;
-
-    let links = get_links(
-        agent_info.agent_initial_pubkey.clone(),
-        LinkTypes::InviteeToRecipe,
-        None,
-    )?;
+    let links = get_links(GetLinksInput {
+        base_address: agent_info.agent_initial_pubkey.clone().into(),
+        link_type: LinkTypes::InviteeToRecipe.try_into_filter()?,
+        tag_prefix: None,
+        after: None,
+        before: None,
+        author: None,
+    })?;
 
     let recipes = get_clone_dna_recipes(&links)?;
 
